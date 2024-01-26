@@ -1,9 +1,34 @@
-import React,{useState} from "react"; 
+import React,{useState, useEffect, useContext} from "react"; 
 import axios from "axios";
+import UserContext from "../Context/UserContext";
+import {useNavigate} from "react-router-dom";
 
 
-const Dashboard = ({token}) => {
+
+const Dashboard = () => {
     const [message, setMessage] = useState("")
+    const [name, setName] = useState("")
+    const {token,setToken} = useContext(UserContext);
+
+    const navigate = useNavigate();
+
+    useEffect(()=>{
+       token && getJoke();
+    },[token])
+
+    useEffect(()=>{
+      if(!token){
+       let jsonToken =   localStorage.getItem("token")
+       console.log(jsonToken)
+       if(!jsonToken){
+              navigate("/login")
+       }
+      else{
+          setToken(JSON.parse(jsonToken))
+        }
+
+      }
+    },[])
 
 
    async function getJoke(){
@@ -14,21 +39,42 @@ const Dashboard = ({token}) => {
                  }
              })
              setMessage(response.data.data.message)
+             setName(response.data.data.user.name)
          }
         catch(err){
                 console.log(err)
         }
     }
 
+   async function logout(){
+         try{
+            const response = await axios.delete("https://instagram-express-app.vercel.app/api/auth/logout",{
+                headers:{
+                    authorization : `Bearer ${token}`
+                 }
+            })
+            setToken("")
+            setName("")
+            setMessage("")
+            alert("Logout Successful")
+            navigate("/login")
 
+         }
+         catch(err){
+             console.log(err)
+         }
+    }
 
     return(
         <div>
-            <h1>Dashboard</h1>
+            <div className="logout">
+                <button onClick={logout}>Logout</button>
+            </div>
+            <h1>Welcome {name}</h1>
             {
-                message && <h2>{message}</h2>
+                message && <p>{message}</p>
             }
-            <button onClick={getJoke}> Get Joke</button>
+            
         </div>
     )
 }

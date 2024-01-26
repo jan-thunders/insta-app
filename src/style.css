@@ -2,3 +2,7 @@ input,button{
     display: block;
     margin: 5px;
 }
+.logout{
+    display: flex;
+    justify-content: flex-end;
+}
